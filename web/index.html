@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Dashboard Template for Bootstrap</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="node_modules/handsontable/dist/handsontable.full.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="dashboard.css" rel="stylesheet">
+  </head>
+
+<style>
+.bg-primary { background-color: #4f7ea5 !important; }
+.navbar-brand { box-shadow: none; }
+</style>
+
+  <body>
+    <nav class="navbar navbar-dark sticky-top bg-primary flex-md-nowrap p-0">
+      <a class="navbar-brand text-center bg-primary col-sm-1 col-md-1 mr-0" href="/">bam.bio</a>
+      <ul class="navbar-nav px-3">
+        <li class="nav-item text-nowrap">
+          <a class="nav-link" href="https://github.com/robertaboukhalil/bam.bio">About</a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+
+        <main role="main" class="col-md-12 ml-sm-auto pt-3 px-4">
+          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+            <div class="btn-toolbar mb-2 mb-md-0">
+              <div class="btn-group mr-2">
+                <div class="dropdown">
+                  <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown">
+                    Load new dataset
+                  </button>
+                  <div class="dropdown-menu">
+                    <a class="dropdown-item" href="#">NA12878</a>
+                    <a class="dropdown-item" href="#">...</a>
+                    <div class="dropdown-divider"></div> 
+                    <a class="dropdown-item" href="#">From my computer</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="dropdown">
+                <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-toggle="dropdown">
+                  Export
+                </button>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="#">BAM file</a>
+                  <a class="dropdown-item" href="#">SAM file</a>
+                </div>
+              </div> 
+            </div>
+          </div>
+
+          <h4>NA12878.bam</h4>
+          <div class="row">
+              <div class="col-10">
+                  <input id="query" class="form-control" type="text" value="samtools view NA12878.bam chr1:1000-2000" autofocus>
+                  <small>
+                      <span id="error"></span>
+                  </small>
+                  <br />
+              </div>
+              <div class="col-2">
+                  <input id="btnRun" type="button" value="Run" class="form-control" disabled>
+              </div>
+          </div>
+          <div class="row">
+              <div class="col-12">
+                <div id="data" class="col-md-12"></div> 
+              </div>
+          </div>
+
+        </main>
+      </div>
+    </div>
+    <br />
+
+    <script src="node_modules/jquery/dist/jquery.slim.min.js"></script>
+    <script src="node_modules/popper.js/dist/umd/popper.min.js"></script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="node_modules/handsontable/dist/handsontable.full.min.js"></script>
+    <script>
+    var data = [
+      ['', 'Ford', 'Tesla', 'Toyota', 'Honda'],
+      ['2017', 10, 11, 12, 13],
+      ['2018', 20, 11, 14],
+      ['2019', 30, 15, 12, 13]
+    ];
+
+    var container = document.getElementById('data');
+    var hot = new Handsontable(container, {
+      data: data,
+      rowHeights: 30,
+      className: "htMiddle",
+      rowHeaders: true,
+      colHeaders: true,
+      filters: true,
+      stretchH: 'all',
+      dropdownMenu: ["filter_by_condition", "filter_operators", "filter_by_condition2", "filter_by_value", "filter_action_bar"],
+      contextMenu: [],
+      licenseKey: 'non-commercial-and-evaluation'
+    });
+    </script>
+  </body>
+</html>
