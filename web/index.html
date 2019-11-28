@@ -16,12 +16,6 @@
     <link href="dashboard.css" rel="stylesheet">
   </head>
 
-  <style>
-  .bg-primary { background-color: #4f7ea5 !important; }
-  .navbar-brand { box-shadow: none; }
-  code { font-family: 'Courier New', Courier, monospace }
-  </style>
-
   <body>
     <nav class="navbar navbar-dark sticky-top bg-primary flex-md-nowrap p-0">
       <a class="navbar-brand text-center bg-primary col-sm-1 col-md-1 mr-0" href="/">bam.bio</a>
@@ -41,11 +35,14 @@
               <h4>Samtools Playground</h4>
               <input type="file" id="file" class="d-none" multiple />
               <div class="btn-group" style="margin-left:20px">
-                <button id="btn-upload" type="button" class="btn btn-sm btn-outline-secondary" disabled>
+                <button id="btn-upload" type="button" class="btn btn-sm btn-outline-secondary">
                   Load local .bam
                 </button>
-                <div class="input-group-append">
-                  <span id="file-local-path" class="input-group-text text-muted">.</span>
+                <div id="file-local" class="input-group-append d-none">
+                  <div class="input-group-text">
+                    <span class="text-muted"><small>Mounted as &nbsp;</small></span>
+                    <input id="file-local-path" type="text" value="" class="form-control form-control-sm p-0 text-danger">
+                  </div>
                 </div>
               </div>
             </div>
@@ -58,7 +55,7 @@
           <div class="row">
               <div class="col-11">
                 <div class="input-group mb-3">
-                  <input id="query" type="text" class="form-control" placeholder="Enter a samtools command, e.g. samtools --help" value="samtools view /urls/DRR01684_merged.chr1.bam 1:17218271-17218472" autofocus>
+                  <input id="query" type="text" class="form-control" placeholder="Enter a samtools command, e.g. samtools --help" value="samtools --help" autofocus>
                   <div class="input-group-append">
                     <button class="btn btn-primary">Run</button>
                     <button class="btn btn-outline-primary dropdown-toggle"  data-toggle="dropdown">Sample queries</button>
@@ -145,10 +142,10 @@
         this.loading();
         return this.aioli.init().then(() => {
           // Once initialized, get samtools version
-          this.status("Fetching samtools version...");
+          this.statusVersion("Fetching samtools version...");
           return this.exec("samtools --version");
         }).then(d => {
-          this.status(d.stdout[0].split("-")[0]);  // d.stdout[0] ~ "samtools 1.9-xx-xxxxxx"
+          this.statusVersion(d.stdout[0].split("-")[0]);  // d.stdout[0] ~ "samtools 1.9-xx-xxxxxx"
           this.log(d.stdout.join("\n"));
 
           // // TODO: update files + path
@@ -184,8 +181,14 @@
         console.log(msg);
       }
 
-      status(msg) {
+      statusVersion(msg) {
         $("#status").html(msg);
+      }
+
+      statusMount(bamFilePath) {
+        $("#file-local").removeClass("d-none");
+        $("#file-local-path").val(bamFilePath);
+        $("#file-local-path").css("width", `${bamFilePath.length + 3}ch`);
       }
 
       error(msg="") {
@@ -194,18 +197,22 @@
 
       loading() {
         $("#data").css("opacity", 0.4);
-        $("#btn-upload, #btn-run, btn-export").attr("disabled", true);
+        $("#btn-run, btn-export").attr("disabled", true);
       }
 
       loaded() {
         $(".colHeader").hide();  // don't show default headers A, B, ...
         $("#data").css("opacity", 1);
-        $("#btn-upload, #btn-run, btn-export").attr("disabled", false);
+        $("#btn-run, btn-export").attr("disabled", false);
       }
 
       // -----------------------------------------------------------------------
-      // 
+      // File management
       // -----------------------------------------------------------------------
+      data(d=[""]) {
+        table.loadData(d);
+      }
+
       mount(files) {
         // Infer which file is .bam, which is .bai
         var bamFile = null, baiFile = null;
@@ -230,21 +237,21 @@
             return;
 
           var bamFilePath = mounted[bamFile.name].path;
-          $("#file-local-path").show().html(`<small>Mounted as <code>${bamFilePath}</code></small>`);
+          this.statusMount(bamFilePath);
           return this.query(`samtools view -H ${bamFilePath}`);
         });
       }
 
       query(query) {
         this.loading();
-        if(query == null) {
+        if(query == null)
           query = this.cmd;
-          $("#query").val(query);
-        }
+        $("#query").val(query);
 
         this.exec(query).then(out => {
           this.error();
           if(out.stderr != null) {
+            console.warn(out.stderr);
             this.data(out.stderr.map(d => [d]));
             this.error(out.stderr[0]);
             this.loaded();
@@ -256,10 +263,6 @@
           this.loaded();
         });
       }
-
-      data(d=[""]) {
-        table.loadData(d);
-      }
     }
 
 
@@ -270,9 +273,7 @@
     // Detect choosing file from computer
     $("#btn-run").on("click", () => app.query());
     $("#btn-upload").click(() => $("#file").trigger("click"));
-    $("#file").change(function(){
-      app.mount(this.files);
-    });
+    $("#file").change(function(){ app.mount(this.files) });
 
     // User inputs
     $("#query, #rows").on("keyup", e => {
@@ -297,7 +298,10 @@
              mimeType: "text/tab-separated-values",
              filename: "bam-export"
            });
-    })
+    });
+
+    $("#file-local-path").on("focus", function(){ this.select() });
+
 
     // =========================================================================
     // On page load

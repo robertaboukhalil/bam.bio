@@ -1,3 +1,26 @@
+/* -----------------------------------------------------------------------------
+   Custom CSS
+   ----------------------------------------------------------------------------- */
+.bg-primary {
+  background-color: #4f7ea5 !important;
+}
+
+.navbar-brand {
+  box-shadow: none;
+}
+
+#file-local-path {
+  font-family: 'Courier New', Courier, monospace;
+  background-color: #eee;
+  font-size: 80%;
+  padding: 2px !important;
+}
+
+
+/* -----------------------------------------------------------------------------
+   Theme defaults
+   ----------------------------------------------------------------------------- */
+
 body {
   font-size: .875rem;
 }
