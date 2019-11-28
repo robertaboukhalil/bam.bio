@@ -19,6 +19,7 @@
 <style>
 .bg-primary { background-color: #4f7ea5 !important; }
 .navbar-brand { box-shadow: none; }
+code { font-family: 'Courier New', Courier, monospace }
 </style>
 
   <body>
@@ -50,17 +51,16 @@
                 <input type="file" id="file" class="d-none" multiple />
               </div>
 
-
-              <div class="dropdown">
+              <!-- <div class="dropdown">
                 <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-toggle="dropdown">
-                  Export
+                  samtools
                 </button>
                 <div class="dropdown-menu">
-                  <a class="dropdown-item" href="#">BAM file</a>
-                  <a class="dropdown-item" href="#">SAM file</a>
+                  <a class="dropdown-item" href="#">--version</a>
+                  <a class="dropdown-item" href="#">view</a>
                 </div>
               </div>
-  
+   -->
 
               <!-- <div class="btn-group mr-2">
                 <div class="dropdown">
@@ -99,7 +99,27 @@
           <h4>Samtools Playground</h4>
           <div class="row">
               <div class="col-10">
-                  <input id="query" class="form-control" type="text" value="samtools view /urls/DRR01684_merged.chr1.bam 1:17218271-17218472" autofocus>
+
+
+                  <div class="input-group mb-3">
+                    <input id="query" type="text" class="form-control" placeholder="Enter a samtools command, e.g. samtools --help" value="samtools view /urls/DRR01684_merged.chr1.bam 1:17218271-17218472" autofocus>
+                    <div class="input-group-append">
+                      <button class="btn btn-outline-secondary dropdown-toggle"  data-toggle="dropdown">Sample queries</button>
+                      <div class="dropdown-menu">
+                        <h6 class="dropdown-header">Help Screen</h6>
+                        <a class="dropdown-item samtool-query" href="#" data-command="samtools --help">&nbsp;&nbsp;<code>samtools --help</code></a>
+                        <h6 class="dropdown-header">BAM Stats</h6>
+                        <a class="dropdown-item samtool-query" href="#" data-command="samtools view -H /urls/DRR01684_merged.chr1.bam">&nbsp;&nbsp;<code>samtools view -H</code></a>
+                        <a class="dropdown-item samtool-query" href="#" data-command="samtools view -c /urls/DRR01684_merged.chr1.bam 1:17218271-17218472">&nbsp;&nbsp;<code>samtools view -c</code></a>
+                        <h6 class="dropdown-header">Filtering</h6>
+                        <a class="dropdown-item samtool-query" href="#" data-command="samtools view -q 60 /urls/DRR01684_merged.chr1.bam 1:17218271-17218472">&nbsp;&nbsp;<code>samtools view -q 60</code></a>
+                        <a class="dropdown-item samtool-query" href="#" data-command="samtools view -F 2 /urls/DRR01684_merged.chr1.bam 1:17218271-17218472">&nbsp;&nbsp;<code>samtools view -F 2</code></a>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- <input id="query" class="form-control" type="text" value="samtools view /urls/DRR01684_merged.chr1.bam 1:17218271-17218472" autofocus> -->
+
                   <div class="row">
                     <div class="col-md-2">
                       <small class="text-muted">
@@ -116,7 +136,7 @@
                   </small>
               </div>
               <div class="col-1 text-center">
-                <button id="btn-run" value="Run" class="btn col-md-12" disabled>
+                <button id="btn-run" value="Run" class="btn btn-primary col-md-12" disabled>
                   Run
                 </button>
                 <small class="text-muted">
@@ -241,8 +261,15 @@
         });
       }
 
-      query() {
-        var cmd = $("#query").val();
+      query(query="") {
+        $("#data").css("opacity", "0.4");
+
+        var cmd = query;
+        if(cmd == "")
+          cmd = $("#query").val();
+        else
+          $("#query").val(query);
+
         this.maxRows = $("#rows").val();
         this.exec(cmd).then(out => {
           this.error();
@@ -253,6 +280,8 @@
           }
           if(out.stdout != null)
             this.data(out.stdout.slice(0, this.maxRows).map(d => d.split("\t")));
+
+          $("#data").css("opacity", "1");
         });
       }
 
@@ -268,6 +297,8 @@
     $("#btn-run").on("click", d => app.query());
     // Detect pressing Enter
     $("#query, #rows").on("keyup", e => { if(e.keyCode == 13) app.query(); });
+    // Sample queries
+    $(".samtool-query").on("click", function(){ app.query($(this).attr("data-command")); });
 
     // Initialize app on page load
     document.addEventListener("DOMContentLoaded", function() {
@@ -290,8 +321,6 @@
         contextMenu: [],
         licenseKey: 'non-commercial-and-evaluation'
       });
-
-      // $('[data-toggle="tooltip"]').tooltip();
     });
     </script>
   </body>
