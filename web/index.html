@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="author" content="Robert Aboukhalil">
 
-    <title>Dashboard Template for Bootstrap</title>
+    <title>bam.bio</title>
 
     <!-- Bootstrap core CSS -->
     <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -38,15 +38,42 @@
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
             <div class="btn-toolbar mb-2 mb-md-0">
               <div class="btn-group mr-2">
+                <button id="btn-example" type="button" class="btn btn-sm btn-primary" disabled>
+                  Load sample data
+                </button>
+              </div>
+
+              <div class="btn-group mr-2">
+                <button id="btn-upload" type="button" class="btn btn-sm btn-outline-secondary" disabled>
+                  Load from my computer
+                </button>
+                <input type="file" id="file" class="d-none" multiple />
+              </div>
+
+
+              <div class="dropdown">
+                <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-toggle="dropdown">
+                  Export
+                </button>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="#">BAM file</a>
+                  <a class="dropdown-item" href="#">SAM file</a>
+                </div>
+              </div>
+  
+
+              <!-- <div class="btn-group mr-2">
                 <div class="dropdown">
                   <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown">
                     Load new dataset
                   </button>
                   <div class="dropdown-menu">
+                    <a id="upload" class="dropdown-item" href="#">Load from my computer</a>
+                    <input type="file" id="upload-file" class="d-none" multiple />
+                    <div class="dropdown-divider"></div>
+                    <h6 class="dropdown-header">Sample BAM files</h6>
                     <a class="dropdown-item" href="#">NA12878</a>
-                    <a class="dropdown-item" href="#">...</a>
-                    <div class="dropdown-divider"></div> 
-                    <a class="dropdown-item" href="#">From my computer</a>
+                    <div id="datasets-user"></div>
                   </div>
                 </div>
               </div>
@@ -59,26 +86,47 @@
                   <a class="dropdown-item" href="#">BAM file</a>
                   <a class="dropdown-item" href="#">SAM file</a>
                 </div>
-              </div> 
+              </div>  -->
+            </div>
+
+            <!-- data-toggle="tooltip" data-placement="bottom" title="Loading..." -->
+            <!-- $("#status").attr("data-original-title", "value"); -->
+            <div id="status" class="float-right">
+                Initializing samtools...
             </div>
           </div>
 
-          <h4>NA12878.bam</h4>
+          <h4>Samtools Playground</h4>
           <div class="row">
               <div class="col-10">
-                  <input id="query" class="form-control" type="text" value="samtools view NA12878.bam chr1:1000-2000" autofocus>
-                  <small>
-                      <span id="error"></span>
-                  </small>
+                  <input id="query" class="form-control" type="text" value="samtools view /urls/DRR01684_merged.chr1.bam 1:17218271-17218472" autofocus>
+                  <div class="row">
+                    <div class="col-md-2">
+                      <small class="text-muted">
+                        <span id="error">Enter a samtools query</span>
+                      </small>
+                    </div>
+                  </div>
                   <br />
               </div>
-              <div class="col-2">
-                  <input id="btnRun" type="button" value="Run" class="form-control" disabled>
+              <div class="col-1 text-center">
+                <input id="rows" class="form-control text-center" type="text" value="100">
+                  <small class="text-muted">
+                    <span>Max rows</span>
+                  </small>
+              </div>
+              <div class="col-1 text-center">
+                <button id="btn-run" value="Run" class="btn col-md-12" disabled>
+                  Run
+                </button>
+                <small class="text-muted">
+                  <span>Or press Enter</span>
+                </small>
               </div>
           </div>
           <div class="row">
               <div class="col-12">
-                <div id="data" class="col-md-12"></div> 
+                <div id="data" style="width:100%; height:70vh; overflow-y:scroll"></div> 
               </div>
           </div>
 
@@ -91,26 +139,159 @@
     <script src="node_modules/popper.js/dist/umd/popper.min.js"></script>
     <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="node_modules/handsontable/dist/handsontable.full.min.js"></script>
+    <script src="node_modules/@robertaboukhalil/aioli/aioli.js"></script>
     <script>
-    var data = [
-      ['', 'Ford', 'Tesla', 'Toyota', 'Honda'],
-      ['2017', 10, 11, 12, 13],
-      ['2018', 20, 11, 14],
-      ['2019', 30, 15, 12, 13]
-    ];
+    var app = null, table = null;
+    var DIR_IMPORTS = [ "samtools.worker.js" ];
 
-    var container = document.getElementById('data');
-    var hot = new Handsontable(container, {
-      data: data,
-      rowHeights: 30,
-      className: "htMiddle",
-      rowHeaders: true,
-      colHeaders: true,
-      filters: true,
-      stretchH: 'all',
-      dropdownMenu: ["filter_by_condition", "filter_operators", "filter_by_condition2", "filter_by_value", "filter_action_bar"],
-      contextMenu: [],
-      licenseKey: 'non-commercial-and-evaluation'
+    // =========================================================================
+    // Main class
+    // =========================================================================
+    class App
+    {
+      // -----------------------------------------------------------------------
+      // Initialization + WebAssembly
+      // -----------------------------------------------------------------------
+      constructor() {
+        // Internal state
+        this.aioli = null;
+        this.maxRows = 100;
+        this.init();
+      }
+
+      init() {
+        // Create Aioli (and the WebWorker in which WASM code will run)
+        this.aioli = new Aioli({
+          imports: DIR_IMPORTS
+        });
+
+        // Initialize WASM within WebWorker
+        return this.aioli.init().then(() => {
+          // Once initialized, get samtools version
+          this.status("Fetching samtools version...");
+          return this.exec("samtools --version");
+        }).then(d => {
+          this.status(d.stdout[0].split("-")[0]);  // d.stdout[0] ~ "samtools 1.9-xx-xxxxxx"
+          this.log(d.stdout.join("\n"));
+
+          // Initialize example
+          this.mount([ "https://storage.googleapis.com/wat-bucket/DRR01684_merged.chr1.bam", "https://storage.googleapis.com/wat-bucket/DRR01684_merged.chr1.bam.bai" ]);
+
+          // Initialize UI
+          $("#btn-upload, #btn-example, #btn-run").attr("disabled", false);
+        });
+      }
+
+      exec(cmdStr, raw=true) {
+        return this.aioli.exec({
+          raw: raw,
+          args: cmdStr.split(' ').slice(1),  // remove 1st command (i.e. samtools)
+        });
+      }
+
+      // -----------------------------------------------------------------------
+      // Utility functions
+      // -----------------------------------------------------------------------
+      log(msg) {
+        console.log(msg);
+      }
+
+      status(msg) {
+        $("#status").html(msg);
+      }
+
+      error(msg="") {
+        $("#error").text(msg);
+      }
+
+      isURL(obj) {
+        return typeof(obj) == "string" && (obj.startsWith('http://') || obj.startsWith('https://'));
+      }
+
+      // -----------------------------------------------------------------------
+      // 
+      // -----------------------------------------------------------------------
+      mount(files) {
+        // Infer which file is .bam, which is .bai
+        var bamFile = null, baiFile = null;
+        for(var f of files) {
+          var fname = this.isURL(f) ? f : f.name;
+          var ext = fname.split('.').pop();
+          if(ext == "bam") bamFile = f;
+          if(ext == "bai") baiFile = f;
+        }
+        if(files.length != 2 || bamFile == null || baiFile == null) {
+          alert("Invalid input: Please select two files: a .bam file and a .bam.bai file");
+          return;
+        }
+
+        var config = {}, file_type = "files";
+        if(this.isURL(bamFile) && this.isURL(baiFile))
+          file_type = "urls";
+        config[file_type] = [bamFile, baiFile];
+        app.aioli.mount(config).then(mounted => {
+          console.log("Mounted:", mounted);
+          $("#datasets-user").html(`<h6 class="dropdown-header">From my computer</h6>`);
+          for(var f in mounted) {
+            if(f.split('.').pop() != "bam")
+              continue;
+            $("#datasets-user").append(`<a class="dropdown-item" href="#" data-path="${mounted[f].path}">${f}</a>`);
+          }
+          // console.log(`File ${file.name} mounted to ${d}`)
+        });
+      }
+
+      query() {
+        var cmd = $("#query").val();
+        this.maxRows = $("#rows").val();
+        this.exec(cmd).then(out => {
+          this.error();
+          if(out.stderr != null) {
+            this.data(out.stderr.map(d => [d]));
+            this.error(out.stderr[0]);
+            return;
+          }
+          if(out.stdout != null)
+            this.data(out.stdout.slice(0, this.maxRows).map(d => d.split("\t")));
+        });
+      }
+
+      data(d=[""]) {
+        table.loadData(d);
+        $(".colHeader").hide();
+      }
+    }
+
+    // Detect choosing file from computer
+    $("#btn-upload").click(() => $("#file").trigger("click"));
+    $("#file").change(function(){ app.mount(this.files); });
+    $("#btn-run").on("click", d => app.query());
+    // Detect pressing Enter
+    $("#query, #rows").on("keyup", e => { if(e.keyCode == 13) app.query(); });
+
+    // Initialize app on page load
+    document.addEventListener("DOMContentLoaded", function() {
+      // Setup app
+      app = new App();
+
+      // Setup data table
+      table = new Handsontable(document.getElementById('data'), {
+        data: [["sdf"]],
+        colHeaders: true,
+        //
+        rowHeights: 30,
+        width: '100%',
+        stretchH: 'all',
+        className: "htMiddle",
+        //
+        manualColumnResize: true,
+        filters: true,
+        dropdownMenu: ["filter_by_condition", "filter_operators", "filter_by_condition2", "filter_by_value", "filter_action_bar"],
+        contextMenu: [],
+        licenseKey: 'non-commercial-and-evaluation'
+      });
+
+      // $('[data-toggle="tooltip"]').tooltip();
     });
     </script>
   </body>
