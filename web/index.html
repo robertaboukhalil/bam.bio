@@ -148,15 +148,15 @@
           this.statusVersion(d.stdout[0].split("-")[0]);  // d.stdout[0] ~ "samtools 1.9-xx-xxxxxx"
           this.log(d.stdout.join("\n"));
 
-          // // TODO: update files + path
-          // // Mount sample URLs
-          // // this.mount([ "https://storage.googleapis.com/wat-bucket/DRR01684_merged.chr1.bam", "https://storage.googleapis.com/wat-bucket/DRR01684_merged.chr1.bam.bai" ]);
-          // this.mount([
-          //   "https://storage.googleapis.com/wat-bucket/DRR01684_merged.chr1.bam",
-          //   "https://storage.googleapis.com/wat-bucket/DRR01684_merged.chr1.bam.bai"
-          // ]).then(d => {
-          //   $("#samtool-query-default").click();
-          // });
+          // TODO: update files + path
+          // Mount sample URLs
+          // this.mount([ "https://storage.googleapis.com/wat-bucket/DRR01684_merged.chr1.bam", "https://storage.googleapis.com/wat-bucket/DRR01684_merged.chr1.bam.bai" ]);
+          this.mount([
+            "https://storage.googleapis.com/wat-bucket/DRR01684_merged.chr1.bam",
+            "https://storage.googleapis.com/wat-bucket/DRR01684_merged.chr1.bam.bai"
+          ]).then(d => {
+            this.queryDefault();
+          });
 
           // Initialize UI
           this.loaded();
@@ -185,6 +185,10 @@
         $("#status").html(msg);
       }
 
+      statusQuery(query) {
+        $("#query").val(query);
+      }
+
       statusMount(bamFilePath) {
         $("#file-local").removeClass("d-none");
         $("#file-local-path").val(bamFilePath);
@@ -204,6 +208,10 @@
         $(".colHeader").hide();  // don't show default headers A, B, ...
         $("#data").css("opacity", 1);
         $("#btn-run, btn-export").attr("disabled", false);
+      }
+
+      queryDefault() {
+        $("#samtool-query-default").click();
       }
 
       // -----------------------------------------------------------------------
@@ -246,8 +254,7 @@
         this.loading();
         if(query == null)
           query = this.cmd;
-        $("#query").val(query);
-
+        this.statusQuery(query);
         this.exec(query).then(out => {
           this.error();
           if(out.stderr != null) {
@@ -300,6 +307,7 @@
            });
     });
 
+    // Make it easier to copy/paste the mounted file path
     $("#file-local-path").on("focus", function(){ this.select() });
 
 
