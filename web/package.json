@@ -1,0 +1,14 @@
+{
+  "name": "bam.bio",
+  "version": "0.0.1",
+  "description": "A playground for the samtools genomics utility",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/robertaboukhalil/bam.bio.git"
+  },
+  "author": "Robert Aboukhalil",
+  "license": "MIT",
+  "dependencies": {
+    "@robertaboukhalil/aioli": "0.1.9"
+  }
+}
