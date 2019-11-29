@@ -32,95 +32,89 @@
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
             <div class="btn-toolbar mb-2 mb-md-0">
               <h4>Samtools Playground</h4>
-              <input type="file" id="file" class="d-none" multiple />
-              <button id="btn-example" type="button" class="btn btn-sm btn-primary" style="margin-left:20px">
-                Load sample .bam
-              </button>    
-              <div class="btn-group" style="margin-left:10px">
-                <button id="btn-upload" type="button" class="btn btn-sm btn-outline-secondary">
-                  Load .bam from my computer
-                </button>
-                <div id="file-local" class="input-group-append d-none">
-                  <div class="input-group-text">
-                    <span class="text-muted"><small>Mounted as &nbsp;</small></span>
-                    <input id="file-local-path" type="text" value="" class="form-control form-control-sm p-0 text-danger">
+            </div>
+          </div>
+
+          <div id="app">
+            <div class="row">
+              <div class="col-12">
+                <div class="input-group mb-3">
+                  <input id="query" type="text" class="form-control" placeholder="Enter a samtools command, e.g. samtools --help" value="samtools --help" autofocus>
+                  <div class="input-group-append">
+                    <input type="file" id="file" class="d-none" multiple />
+                    <input id="rows" type="text" class="form-control form-control-sm text-center text-muted" value="100" style="width:7ch" data-toggle="tooltip" title="Max lines to display in table">
+                    <button id="btn-upload" class="btn btn-outline-info" data-toggle="tooltip" title="Load a .bam and .bai file from your computer">Load local .bam</button>
+                    <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Sample queries</button>
+                    <div class="dropdown-menu">
+                      <h6 class="dropdown-header">Help Screen</h6>
+                      <a
+                        class="dropdown-item samtool-query" data-toggle="tooltip" data-placement="left" href="#"
+                        data-command="samtools view -?"
+                        data-description="Extensive documentation for <code>samtools view</code> parameters"
+                        title="Help for view command">&nbsp;&nbsp;<code>samtools view -?</code></a>
+                      <h6 class="dropdown-header">Filtering</h6>
+                      <a id="samtool-query-default"
+                        class="dropdown-item samtool-query" data-toggle="tooltip" data-placement="left" href="#"
+                        data-command="samtools view /urls/A549_CDKN2A.bam 9:21,967,752-21,995,324"
+                        data-description="Get reads from a genomic region of interest"
+                        title="Get reads from region">&nbsp;&nbsp;<code>samtools view</code></a>
+                      <a
+                        class="dropdown-item samtool-query"
+                        data-toggle="tooltip" data-placement="left" href="#"
+                        data-command="samtools view -q 10 /urls/A549_CDKN2A.bam 9:21,967,752-21,995,324"
+                        data-description="Filter out reads that have a mapping quality < 20 (mapping quality = 5th column)"
+                        title="Filter by mapping quality">&nbsp;&nbsp;<code>samtools view -q 20</code></a>
+                      <a
+                        class="dropdown-item samtool-query"
+                        data-toggle="tooltip" data-placement="left" href="#"
+                        data-command="samtools view -F 2 /urls/A549_CDKN2A.bam 9:21,967,752-21,995,324"
+                        data-description="Filter out reads that don't satisfy a certain flag condition (flag = 2nd column)"
+                        title="Filter by SAM flags">&nbsp;&nbsp;<code>samtools view -F 2</code></a>
+                      <h6 class="dropdown-header">BAM Stats</h6>
+                      <a
+                        class="dropdown-item samtool-query" data-toggle="tooltip" data-placement="left" href="#"
+                        data-command="samtools idxstats /urls/A549_CDKN2A.bam"
+                        data-description="Retrieve statistics about the <code>.bai</code> index"
+                        title="Stats about the .bai file">&nbsp;&nbsp;<code>samtools idxstats</code></a>
+                      <a
+                        class="dropdown-item samtool-query" data-toggle="tooltip" data-placement="left" href="#"
+                        data-command="samtools view -H /urls/A549_CDKN2A.bam"
+                        data-description="Retrieve the header from the <code>.bam</code> file"
+                        title="Output BAM file header">&nbsp;&nbsp;<code>samtools view -H</code></a>
+                      <a
+                        class="dropdown-item samtool-query" data-toggle="tooltip" data-placement="left" href="#"
+                        data-command="samtools view -c /urls/A549_CDKN2A.bam 9:21,967,752-21,995,324"
+                        data-description="Only returns the number (or <u>c</u>ount) of reads in the region of interest"
+                        title="Output number of reads">&nbsp;&nbsp;<code>samtools view -c</code></a>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div id="app" class="row">
-              <div class="col-11">
-                <div class="row col-12">
-                  <div class="input-group mb-3">
-                    <input id="query" type="text" class="form-control" placeholder="Enter a samtools command, e.g. samtools --help" value="samtools --help" autofocus>
-                    <div class="input-group-append">
-                      <button class="btn btn-primary">Run</button>
-                      <button class="btn btn-outline-primary dropdown-toggle"  data-toggle="dropdown">Sample queries</button>
-                      <div class="dropdown-menu">
-                        <h6 class="dropdown-header">Help Screen</h6>
-                        <a
-                          class="dropdown-item samtool-query" data-toggle="tooltip" data-placement="left" href="#"
-                          data-command="samtools view -?"
-                          data-description="Extensive documentation for <code>samtools view</code> parameters"
-                          title="Help for view command">&nbsp;&nbsp;<code>samtools view -?</code></a>
-                        <h6 class="dropdown-header">Filtering</h6>
-                        <a id="samtool-query-default"
-                          class="dropdown-item samtool-query" data-toggle="tooltip" data-placement="left" href="#"
-                          data-command="samtools view /urls/A549_CDKN2A.bam 9:21,967,752-21,995,324"
-                          data-description="Get reads from a genomic region of interest"
-                          title="Get reads from region">&nbsp;&nbsp;<code>samtools view</code></a>
-                        <a
-                          class="dropdown-item samtool-query"
-                          data-toggle="tooltip" data-placement="left" href="#"
-                          data-command="samtools view -q 10 /urls/A549_CDKN2A.bam 9:21,967,752-21,995,324"
-                          data-description="Filter out reads that have a mapping quality < 20 (mapping quality = 5th column)"
-                          title="Filter by mapping quality">&nbsp;&nbsp;<code>samtools view -q 20</code></a>
-                        <a
-                          class="dropdown-item samtool-query"
-                          data-toggle="tooltip" data-placement="left" href="#"
-                          data-command="samtools view -F 2 /urls/A549_CDKN2A.bam 9:21,967,752-21,995,324"
-                          data-description="Filter out reads that don't satisfy a certain flag condition (flag = 2nd column)"
-                          title="Filter by SAM flags">&nbsp;&nbsp;<code>samtools view -F 2</code></a>
-                        <h6 class="dropdown-header">BAM Stats</h6>
-                        <a
-                          class="dropdown-item samtool-query" data-toggle="tooltip" data-placement="left" href="#"
-                          data-command="samtools idxstats /urls/A549_CDKN2A.bam"
-                          data-description="Retrieve statistics about the <code>.bai</code> index"
-                          title="Stats about the .bai file">&nbsp;&nbsp;<code>samtools idxstats</code></a>
-                        <a
-                          class="dropdown-item samtool-query" data-toggle="tooltip" data-placement="left" href="#"
-                          data-command="samtools view -H /urls/A549_CDKN2A.bam"
-                          data-description="Retrieve the header from the <code>.bam</code> file"
-                          title="Output BAM file header">&nbsp;&nbsp;<code>samtools view -H</code></a>
-                        <a
-                          class="dropdown-item samtool-query" data-toggle="tooltip" data-placement="left" href="#"
-                          data-command="samtools view -c /urls/A549_CDKN2A.bam 9:21,967,752-21,995,324"
-                          data-description="Only returns the number (or <u>c</u>ount) of reads in the region of interest"
-                          title="Output number of reads">&nbsp;&nbsp;<code>samtools view -c</code></a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="row col-12">
-                  <small class="text-muted" style="margin-top:-10px">
-                    <span id="error"></span>
-                    <br /><br />
-                  </small>
-                </div>
-              </div>
-              <div class="col-1 text-center">
-                <input id="rows" class="form-control text-center" type="text" value="100">
+            <div class="row">
+              <div class="col-9" style="margin-top:-15px">
                 <small class="text-muted">
-                  <span>Max rows</span>
+                  <span id="error"></span>
+                  <br /><br />
                 </small>
               </div>
+              <div id="file-local" class="col-3 d-none" style="margin-top:-15px;">
+                <div class="input-group">
+                  <label class="text-muted" for="file-local-path">
+                    <small>Local .bam file mounted to:</small>
+                  </label>
+                  &nbsp;
+                  <input type="text" class="form-control form-control-sm text-danger" id="file-local-path">
+                </div>
+                <br /><br />
+              </div>
+            </div>
           </div>
           <div class="row">
               <div class="col-12">
-                <div id="data" style="width:100%; height:55vh; overflow-y:scroll"></div>
+                <div id="data" style="width:100%; height:60vh; overflow-y:scroll"></div>
+                <br />
               </div>
 
               <div class="col-12">
@@ -177,7 +171,7 @@
         return this.aioli
           .init()
           .then(() => this.mount(DIR_SAMPLE_BAM))
-          .then(() => this.query("samtools --help"))
+          .then(() => this.query("samtools --help", "Enter a <code>samtool</code> query and press Enter"))
           .then(() => this.loaded());
       }
 
@@ -204,7 +198,6 @@
       statusMount(bamFilePath) {
         $("#file-local").removeClass("d-none");
         $("#file-local-path").val(bamFilePath);
-        $("#file-local-path").css("width", `${bamFilePath.length + 3}ch`);
       }
 
       error(msg, red=true) {
@@ -221,13 +214,38 @@
 
       loading() {
         $("#app, #data").css("opacity", 0.4);
-        $("#btn-run, #btn-export, #btn-example, #btn-upload").attr("disabled", true);
+        $("#btn-export, #btn-upload").attr("disabled", true);
       }
 
       loaded() {
-        $(".colHeader").hide();  // don't show default headers A, B, ...
         $("#app, #data").css("opacity", 1);
-        $("#btn-run, #btn-export, #btn-example, #btn-upload").attr("disabled", false);
+        $("#btn-export, #btn-upload").attr("disabled", false);
+
+        // By default, hide column names (default = A, B, C, ...)
+        $(".colHeader").hide();
+
+        // Know column names in some cases
+        var cols = [];
+        var cmd = this.cmd.split(" ");
+        // samtools view
+        if(cmd[1] == "view") {
+          // samtools view file chr:start-stop
+          if(table.countCols() > 11)
+            cols = ["Read Name", "Flag", "Chromosome", "Start", "Mapping Quality", "CIGAR", "Rnext", "Pnext", "Template Length", "Sequence", "Quality Scores"];
+          // samtools view -H file
+          else if(cmd[2] == "-H")
+            cols = ["Tag", "Data", "", "", ""];
+
+        // samtools idxstats
+        } else if(cmd[1] == "idxstats") {
+          cols = ["Chromosome", "Length", "Mapped Reads", "Unmapped Reads"]
+        }
+
+        if(cols.length > 0) {
+          $(".colHeader").show();
+          table.updateSettings({ colHeaders: cols });
+        }
+        
       }
 
       // -----------------------------------------------------------------------
@@ -277,6 +295,7 @@
 
       query(query, description="") {
         query = query || this.cmd;
+        this.cmd = query;
         this.loading();
         this.statusQuery(query);
         this.exec(query).then(out => {
@@ -311,7 +330,6 @@
     // =========================================================================
 
     // Detect choosing file from computer
-    $("#btn-run").on("click", () => app.query());
     $("#btn-upload").on("click", () => $("#file").trigger("click"));
     $("#file").change(function(){ app.mount(this.files) });
 
@@ -324,8 +342,11 @@
     });
 
     // Sample queries
-    $("#btn-example").on("click", () => $("#samtool-query-default").click());
     $(".samtool-query").on("click", function() {
+      // Make sure tooltips disappear when load an example
+      $('[data-toggle="tooltip"]').tooltip("dispose");
+      $('[data-toggle="tooltip"]').tooltip();
+      // Launch query
       app.query(
         $(this).attr("data-command"),
         $(this).attr("data-description")
@@ -358,7 +379,7 @@
       table = new Handsontable(document.getElementById("data"), {
         data: [[""]], colHeaders: [""],
         rowHeights: 30, width: '100%', stretchH: 'all', className: "htMiddle",
-        manualColumnResize: true, filters: true, contextMenu: [],
+        manualColumnResize: true, filters: true, columnSorting: true,
         dropdownMenu: ["filter_by_condition", "filter_operators", "filter_by_condition2", "filter_by_value", "filter_action_bar"],
         licenseKey: "non-commercial-and-evaluation"
       });
