@@ -28,13 +28,15 @@
 
     <div class="container-fluid">
       <div class="row">
-
         <main role="main" class="col-md-12 ml-sm-auto pt-3 px-4">
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
             <div class="btn-toolbar mb-2 mb-md-0">
               <h4>Samtools Playground</h4>
               <input type="file" id="file" class="d-none" multiple />
-              <div class="btn-group" style="margin-left:20px">
+              <button id="btn-example" type="button" class="btn btn-sm btn-primary" style="margin-left:20px">
+                Load sample .bam
+              </button>    
+              <div class="btn-group" style="margin-left:10px">
                 <button id="btn-upload" type="button" class="btn btn-sm btn-outline-secondary">
                   Load local .bam
                 </button>
@@ -46,46 +48,43 @@
                 </div>
               </div>
             </div>
-
-            <div id="status" class="float-right">
-                Initializing samtools...
-            </div>
           </div>
 
-          <div class="row">
+          <div id="app" class="row">
               <div class="col-11">
-                <div class="input-group mb-3">
-                  <input id="query" type="text" class="form-control" placeholder="Enter a samtools command, e.g. samtools --help" value="samtools --help" autofocus>
-                  <div class="input-group-append">
-                    <button class="btn btn-primary">Run</button>
-                    <button class="btn btn-outline-primary dropdown-toggle"  data-toggle="dropdown">Sample queries</button>
-                    <div class="dropdown-menu">
-                      <h6 class="dropdown-header">Help Screen</h6>
-                      <a class="dropdown-item samtool-query" href="#" data-command="samtools --help">&nbsp;&nbsp;<code>samtools --help</code></a>
-                      <h6 class="dropdown-header">BAM Stats</h6>
-                      <a class="dropdown-item samtool-query" href="#" data-command="samtools view -H /urls/DRR01684_merged.chr1.bam">&nbsp;&nbsp;<code>samtools view -H</code></a>
-                      <a class="dropdown-item samtool-query" href="#" data-command="samtools view -c /urls/DRR01684_merged.chr1.bam 1:17218271-17218472">&nbsp;&nbsp;<code>samtools view -c</code></a>
-                      <h6 class="dropdown-header">Filtering</h6>
-                      <a id="samtool-query-default" class="dropdown-item samtool-query" href="#" data-command="samtools view -q 60 /urls/DRR01684_merged.chr1.bam 1:17218271-17218472">&nbsp;&nbsp;<code>samtools view -q 60</code></a>
-                      <a class="dropdown-item samtool-query" href="#" data-command="samtools view -F 2 /urls/DRR01684_merged.chr1.bam 1:17218271-17218472">&nbsp;&nbsp;<code>samtools view -F 2</code></a>
+                <div class="row col-12">
+                  <div class="input-group mb-3">
+                    <input id="query" type="text" class="form-control" placeholder="Enter a samtools command, e.g. samtools --help" value="samtools --help" autofocus>
+                    <div class="input-group-append">
+                      <button class="btn btn-primary">Run</button>
+                      <button class="btn btn-outline-primary dropdown-toggle"  data-toggle="dropdown">Sample queries</button>
+                      <div class="dropdown-menu">
+                        <h6 class="dropdown-header">Help Screen</h6>
+                        <a class="dropdown-item samtool-query" href="#" data-command="samtools --help">&nbsp;&nbsp;<code>samtools --help</code></a>
+                        <h6 class="dropdown-header">BAM Stats</h6>
+                        <a class="dropdown-item samtool-query" href="#" data-command="samtools idxstats /urls/DRR01684_merged.chr1.bam">&nbsp;&nbsp;<code>samtools idxstats</code></a>
+                        <a class="dropdown-item samtool-query" href="#" data-command="samtools view -H /urls/DRR01684_merged.chr1.bam">&nbsp;&nbsp;<code>samtools view -H</code></a>
+                        <a class="dropdown-item samtool-query" href="#" data-command="samtools view -c /urls/DRR01684_merged.chr1.bam 1:17218271-17218472">&nbsp;&nbsp;<code>samtools view -c</code></a>
+                        <h6 class="dropdown-header">Filtering</h6>
+                        <a id="samtool-query-default" class="dropdown-item samtool-query" href="#" data-command="samtools view -q 60 /urls/DRR01684_merged.chr1.bam 1:17218271-17218472">&nbsp;&nbsp;<code>samtools view -q 60</code></a>
+                        <a class="dropdown-item samtool-query" href="#" data-command="samtools view -F 2 /urls/DRR01684_merged.chr1.bam 1:17218271-17218472">&nbsp;&nbsp;<code>samtools view -F 2</code></a>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div class="row">
-                  <div class="col-md-2">
-                    <small class="text-muted">
-                      <span id="error">Enter a samtools query</span>
-                    </small>
-                  </div>
+                <div class="row col-12">
+                  <small class="text-muted" style="margin-top:-10px">
+                    <span id="error"></span>
+                    <br /><br />
+                  </small>
                 </div>
-                <br />
               </div>
               <div class="col-1 text-center">
                 <input id="rows" class="form-control text-center" type="text" value="100">
-                  <small class="text-muted">
-                    <span>Max rows</span>
-                  </small>
+                <small class="text-muted">
+                  <span>Max rows</span>
+                </small>
               </div>
           </div>
           <div class="row">
@@ -101,7 +100,6 @@
                 </div> 
               </div> 
           </div>
-
         </main>
       </div>
     </div>
@@ -115,6 +113,12 @@
     <script>
     var app = null, table = null;
     var DIR_IMPORTS = [ "samtools.worker.js" ];
+    // TODO: update files + path
+    var DIR_SAMPLE_BAM = [
+      "https://storage.googleapis.com/wat-bucket/DRR01684_merged.chr1.bam",
+      "https://storage.googleapis.com/wat-bucket/DRR01684_merged.chr1.bam.bai"
+    ];
+
 
     // =========================================================================
     // Main class
@@ -124,8 +128,8 @@
       // -----------------------------------------------------------------------
       // Initialization + WebAssembly
       // -----------------------------------------------------------------------
+
       constructor() {
-        // Internal state
         this.aioli = null;
         this.maxRows = 100;
         this.cmd = "";
@@ -133,56 +137,33 @@
       }
 
       init() {
-        // Create Aioli (and the WebWorker in which WASM code will run)
-        this.aioli = new Aioli({
-          imports: DIR_IMPORTS
-        });
-
-        // Initialize WASM within WebWorker
         this.loading();
-        return this.aioli.init().then(() => {
-          // Once initialized, get samtools version
-          this.statusVersion("Fetching samtools version...");
-          return this.exec("samtools --version");
-        }).then(d => {
-          this.statusVersion(d.stdout[0].split("-")[0]);  // d.stdout[0] ~ "samtools 1.9-xx-xxxxxx"
-          this.log(d.stdout.join("\n"));
 
-          // TODO: update files + path
-          // Mount sample URLs
-          // this.mount([ "https://storage.googleapis.com/wat-bucket/DRR01684_merged.chr1.bam", "https://storage.googleapis.com/wat-bucket/DRR01684_merged.chr1.bam.bai" ]);
-          this.mount([
-            "https://storage.googleapis.com/wat-bucket/DRR01684_merged.chr1.bam",
-            "https://storage.googleapis.com/wat-bucket/DRR01684_merged.chr1.bam.bai"
-          ]).then(d => {
-            this.queryDefault();
-          });
+        // Create Aioli (and the WebWorker in which Wasm code will run)
+        this.aioli = new Aioli({ imports: DIR_IMPORTS });
 
-          // Initialize UI
-          this.loaded();
-        });
+        // Initialize Wasm within WebWorker + mount sample BAMs
+        return this.aioli
+          .init()
+          .then(() => this.mount(DIR_SAMPLE_BAM))
+          .then(() => this.query("samtools --help"))
+          .then(() => this.loaded());
       }
 
-      exec(cmdStr, raw=true) {
+      exec(cmdStr) {
         return this.aioli.exec({
-          raw: raw,
-          args: cmdStr.split(' ').slice(1),  // remove 1st command (i.e. samtools)
+          raw: true,
+          args: cmdStr.split(" ").slice(1),  // remove 1st command (i.e. samtools)
         });
       }
 
-      isURL(obj) {
-        return typeof(obj) == "string" && (obj.startsWith('http://') || obj.startsWith('https://'));
-      }
 
       // -----------------------------------------------------------------------
       // Utility functions for UI
       // -----------------------------------------------------------------------
+
       log(msg) {
         console.log(msg);
-      }
-
-      statusVersion(msg) {
-        $("#status").html(msg);
       }
 
       statusQuery(query) {
@@ -195,28 +176,34 @@
         $("#file-local-path").css("width", `${bamFilePath.length + 3}ch`);
       }
 
-      error(msg="") {
-        $("#error").text(msg);
+      error(msg) {
+        $("#error").removeClass("text-danger");
+        if(msg == null)
+          msg = "Enter a samtools query and press Enter";
+        else
+          $("#error").addClass("text-danger");
+        $("#error").html(msg);
       }
 
       loading() {
-        $("#data").css("opacity", 0.4);
-        $("#btn-run, btn-export").attr("disabled", true);
+        $("#app, #data").css("opacity", 0.4);
+        $("#btn-run, #btn-export, #btn-example, #btn-upload").attr("disabled", true);
       }
 
       loaded() {
         $(".colHeader").hide();  // don't show default headers A, B, ...
-        $("#data").css("opacity", 1);
-        $("#btn-run, btn-export").attr("disabled", false);
-      }
-
-      queryDefault() {
-        $("#samtool-query-default").click();
+        $("#app, #data").css("opacity", 1);
+        $("#btn-run, #btn-export, #btn-example, #btn-upload").attr("disabled", false);
       }
 
       // -----------------------------------------------------------------------
       // File management
       // -----------------------------------------------------------------------
+
+      isURL(obj) {
+        return typeof(obj) == "string" && (obj.startsWith("http://") || obj.startsWith("https://"));
+      }
+
       data(d=[""]) {
         table.loadData(d);
       }
@@ -227,8 +214,10 @@
         for(var f of files) {
           var fname = this.isURL(f) ? f : f.name;
           var ext = fname.split('.').pop();
-          if(ext == "bam") bamFile = f;
-          if(ext == "bai") baiFile = f;
+          if(ext == "bam")
+            bamFile = f;
+          if(ext == "bai")
+            baiFile = f;
         }
         if(files.length != 2 || bamFile == null || baiFile == null) {
           alert("Invalid input: Please select two files: a .bam file and a .bam.bai file");
@@ -239,11 +228,13 @@
         var isURL = this.isURL(bamFile) && this.isURL(baiFile);
         config[isURL ? "urls" : "files"] = [bamFile, baiFile];
 
+        // Mount files or URLs
         return this.aioli.mount(config).then(mounted => {
           this.log("Mounted:", mounted);
           if(isURL)
             return;
 
+          // If user provided their own .bam file, run simple command on it
           var bamFilePath = mounted[bamFile.name].path;
           this.statusMount(bamFilePath);
           return this.query(`samtools view -H ${bamFilePath}`);
@@ -251,12 +242,12 @@
       }
 
       query(query) {
+        query = query || this.cmd;
         this.loading();
-        if(query == null)
-          query = this.cmd;
         this.statusQuery(query);
         this.exec(query).then(out => {
           this.error();
+          // On error:
           if(out.stderr != null) {
             console.warn(out.stderr);
             this.data(out.stderr.map(d => [d]));
@@ -264,8 +255,16 @@
             this.loaded();
             return;
           }
-          if(out.stdout != null)
-            this.data(out.stdout.slice(0, this.maxRows).map(d => d.split("\t")));
+          // If have output to display, split by tab and limit nb rows
+          if(out.stdout != null) {
+            this.data(
+              out.stdout
+                 .slice(0, this.maxRows)
+                 .map(d => d.split("\t"))
+            );
+          } else {
+            this.data();
+          }
 
           this.loaded();
         });
@@ -279,7 +278,7 @@
 
     // Detect choosing file from computer
     $("#btn-run").on("click", () => app.query());
-    $("#btn-upload").click(() => $("#file").trigger("click"));
+    $("#btn-upload").on("click", () => $("#file").trigger("click"));
     $("#file").change(function(){ app.mount(this.files) });
 
     // User inputs
@@ -291,9 +290,8 @@
     });
 
     // Sample queries
-    $(".samtool-query").on("click", function(){
-      app.query($(this).attr("data-command"));
-    });
+    $("#btn-example").on("click", () => $("#samtool-query-default").click());
+    $(".samtool-query").on("click", function(){ app.query($(this).attr("data-command")) });
 
     // Export as TSV
     $("#btn-export").on("click", () => {
@@ -303,7 +301,7 @@
              rowDelimiter: "\n",
              fileExtension: "sam",
              mimeType: "text/tab-separated-values",
-             filename: "bam-export"
+             filename: "export-[YYYY]-[MM]-[DD]"
            });
     });
 
@@ -315,26 +313,18 @@
     // On page load
     // =========================================================================
     document.addEventListener("DOMContentLoaded", function() {
-      // Setup app
-      app = new App();
-
       // Setup data table
       table = new Handsontable(document.getElementById("data"), {
-        data: [[""]],
-        colHeaders: [""],
-        //
-        rowHeights: 30,
-        width: '100%',
-        stretchH: 'all',
-        className: "htMiddle",
-        //
-        manualColumnResize: true,
-        filters: true,
+        data: [[""]], colHeaders: [""],
+        rowHeights: 30, width: '100%', stretchH: 'all', className: "htMiddle",
+        manualColumnResize: true, filters: true, contextMenu: [],
         dropdownMenu: ["filter_by_condition", "filter_operators", "filter_by_condition2", "filter_by_value", "filter_action_bar"],
-        contextMenu: [],
         licenseKey: "non-commercial-and-evaluation"
       });
     });
+
+    // Setup app
+    app = new App();
     </script>
   </body>
 </html>
