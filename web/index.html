@@ -60,15 +60,45 @@
                       <button class="btn btn-outline-primary dropdown-toggle"  data-toggle="dropdown">Sample queries</button>
                       <div class="dropdown-menu">
                         <h6 class="dropdown-header">Help Screen</h6>
-                        <a class="dropdown-item samtool-query" href="#" data-command="samtools --help">&nbsp;&nbsp;<code>samtools --help</code></a>
-                        <h6 class="dropdown-header">BAM Stats</h6>
-                        <a class="dropdown-item samtool-query" href="#" data-command="samtools idxstats /urls/A549_CDKN2A.bam">&nbsp;&nbsp;<code>samtools idxstats</code></a>
-                        <a class="dropdown-item samtool-query" href="#" data-command="samtools view -H /urls/A549_CDKN2A.bam">&nbsp;&nbsp;<code>samtools view -H</code></a>
-                        <a class="dropdown-item samtool-query" href="#" data-command="samtools view -c /urls/A549_CDKN2A.bam 9:21,967,752-21,995,324">&nbsp;&nbsp;<code>samtools view -c</code></a>
+                        <a
+                          class="dropdown-item samtool-query" data-toggle="tooltip" data-placement="left" href="#"
+                          data-command="samtools view -?"
+                          data-description="Extensive documentation for <code>samtools view</code> parameters"
+                          title="Help for view command">&nbsp;&nbsp;<code>samtools view -?</code></a>
                         <h6 class="dropdown-header">Filtering</h6>
-                        <a id="samtool-query-default" class="dropdown-item samtool-query" href="#" data-command="samtools view /urls/A549_CDKN2A.bam 9:21,967,752-21,995,324">&nbsp;&nbsp;<code>samtools view</code></a>
-                        <a class="dropdown-item samtool-query" href="#" data-command="samtools view -q 10 /urls/A549_CDKN2A.bam 9:21,967,752-21,995,324">&nbsp;&nbsp;<code>samtools view -q 20</code></a>
-                        <a class="dropdown-item samtool-query" href="#" data-command="samtools view -F 2 /urls/A549_CDKN2A.bam 9:21,967,752-21,995,324">&nbsp;&nbsp;<code>samtools view -F 2</code></a>
+                        <a id="samtool-query-default"
+                          class="dropdown-item samtool-query" data-toggle="tooltip" data-placement="left" href="#"
+                          data-command="samtools view /urls/A549_CDKN2A.bam 9:21,967,752-21,995,324"
+                          data-description="Get reads from a genomic region of interest"
+                          title="Get reads from region">&nbsp;&nbsp;<code>samtools view</code></a>
+                        <a
+                          class="dropdown-item samtool-query"
+                          data-toggle="tooltip" data-placement="left" href="#"
+                          data-command="samtools view -q 10 /urls/A549_CDKN2A.bam 9:21,967,752-21,995,324"
+                          data-description="Filter out reads that have a mapping quality < 20 (mapping quality = 5th column)"
+                          title="Filter by mapping quality">&nbsp;&nbsp;<code>samtools view -q 20</code></a>
+                        <a
+                          class="dropdown-item samtool-query"
+                          data-toggle="tooltip" data-placement="left" href="#"
+                          data-command="samtools view -F 2 /urls/A549_CDKN2A.bam 9:21,967,752-21,995,324"
+                          data-description="Filter out reads that don't satisfy a certain flag condition (flag = 2nd column)"
+                          title="Filter by SAM flags">&nbsp;&nbsp;<code>samtools view -F 2</code></a>
+                        <h6 class="dropdown-header">BAM Stats</h6>
+                        <a
+                          class="dropdown-item samtool-query" data-toggle="tooltip" data-placement="left" href="#"
+                          data-command="samtools idxstats /urls/A549_CDKN2A.bam"
+                          data-description="Retrieve statistics about the <code>.bai</code> index"
+                          title="Stats about the .bai file">&nbsp;&nbsp;<code>samtools idxstats</code></a>
+                        <a
+                          class="dropdown-item samtool-query" data-toggle="tooltip" data-placement="left" href="#"
+                          data-command="samtools view -H /urls/A549_CDKN2A.bam"
+                          data-description="Retrieve the header from the <code>.bam</code> file"
+                          title="Output BAM file header">&nbsp;&nbsp;<code>samtools view -H</code></a>
+                        <a
+                          class="dropdown-item samtool-query" data-toggle="tooltip" data-placement="left" href="#"
+                          data-command="samtools view -c /urls/A549_CDKN2A.bam 9:21,967,752-21,995,324"
+                          data-description="Only returns the number (or <u>c</u>ount) of reads in the region of interest"
+                          title="Output number of reads">&nbsp;&nbsp;<code>samtools view -c</code></a>
                       </div>
                     </div>
                   </div>
@@ -177,12 +207,15 @@
         $("#file-local-path").css("width", `${bamFilePath.length + 3}ch`);
       }
 
-      error(msg) {
-        $("#error").removeClass("text-danger");
+      error(msg, red=true) {
+        $("#error").removeClass("text-danger text-info");
         if(msg == null)
           msg = "Enter a samtools query and press Enter";
         else
-          $("#error").addClass("text-danger");
+          if(red)
+            $("#error").addClass("text-danger");
+          else
+            $("#error").addClass("text-info");
         $("#error").html(msg);
       }
 
@@ -242,12 +275,12 @@
         });
       }
 
-      query(query) {
+      query(query, description="") {
         query = query || this.cmd;
         this.loading();
         this.statusQuery(query);
         this.exec(query).then(out => {
-          this.error();
+          this.error(description, false);
           // On error:
           if(out.stderr != null) {
             console.warn(out.stderr);
@@ -292,7 +325,12 @@
 
     // Sample queries
     $("#btn-example").on("click", () => $("#samtool-query-default").click());
-    $(".samtool-query").on("click", function(){ app.query($(this).attr("data-command")) });
+    $(".samtool-query").on("click", function() {
+      app.query(
+        $(this).attr("data-command"),
+        $(this).attr("data-description")
+      );
+    });
 
     // Export as TSV
     $("#btn-export").on("click", () => {
@@ -314,6 +352,8 @@
     // On page load
     // =========================================================================
     document.addEventListener("DOMContentLoaded", function() {
+      $('[data-toggle="tooltip"]').tooltip();
+
       // Setup data table
       table = new Handsontable(document.getElementById("data"), {
         data: [[""]], colHeaders: [""],
@@ -322,10 +362,10 @@
         dropdownMenu: ["filter_by_condition", "filter_operators", "filter_by_condition2", "filter_by_value", "filter_action_bar"],
         licenseKey: "non-commercial-and-evaluation"
       });
-    });
 
-    // Setup app
-    app = new App();
+      // Setup app
+      app = new App();
+    });
     </script>
   </body>
 </html>
