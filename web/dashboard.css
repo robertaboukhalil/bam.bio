@@ -118,3 +118,7 @@ body {
   height: 18px;
   margin-top: 4px;
 }
+
+#query {
+  font-family: 'Courier New', Courier, monospace;
+}

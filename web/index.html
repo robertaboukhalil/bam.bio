@@ -136,7 +136,7 @@
     <script src="node_modules/handsontable/dist/handsontable.full.min.js"></script>
     <script src="node_modules/@robertaboukhalil/aioli/aioli.js"></script>
     <script>
-    var app = null, table = null, debug = true;
+    var app = null, table = null, debug = window.location.hostname == "localhost";
     var DIR_SAMPLE_BAM_PREFIX = debug ? "../../../" : "";
     var DIR_IMPORTS = [ "samtools.worker.js" ];
     var DIR_SAMPLE_BAM = [
