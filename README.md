@@ -15,3 +15,7 @@ $ /usr/bin/python -m SimpleHTTPServer 8000
 ## Compile `samtools` to WebAssembly
 
 See [biowasm](https://github.com/robertaboukhalil/biowasm) and run `make samtools`.
+
+## Run `samtools` in a WebWorker
+
+Uses [aioli](https://github.com/robertaboukhalil/aioli) to run samtools inside a WebWorker (i.e. a background thread), which handles mounting .bam Files provided by the user.
