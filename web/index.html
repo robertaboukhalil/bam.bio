@@ -21,7 +21,7 @@
       <a class="navbar-brand text-center bg-primary col-sm-1 col-md-1 mr-0" href="/">bam.bio</a>
       <ul class="navbar-nav px-3">
         <li class="nav-item text-nowrap">
-          <a class="nav-link" href="https://github.com/robertaboukhalil/bam.bio">About</a>
+          <a class="nav-link" target="_blank" href="https://github.com/robertaboukhalil/bam.bio">About</a>
         </li>
       </ul>
     </nav>
@@ -140,11 +140,11 @@
         table = null,
         browser = null,
         debug = window.location.hostname == "localhost";
-    var DIR_SAMPLE_BAM_PREFIX = debug ? "../../../" : "";
+    var DIR_SAMPLE_BAM_PREFIX = debug ? "http://localhost:8000/bam.bio/web" : "http://www.bam.bio";
     var DIR_IMPORTS = [ "samtools.worker.js" ];
     var DIR_SAMPLE_BAM = [
-      `${DIR_SAMPLE_BAM_PREFIX}data/A549_CDKN2A.bam`,
-      `${DIR_SAMPLE_BAM_PREFIX}data/A549_CDKN2A.bam.bai`
+      `${DIR_SAMPLE_BAM_PREFIX}/data/A549_CDKN2A.bam`,
+      `${DIR_SAMPLE_BAM_PREFIX}/data/A549_CDKN2A.bam.bai`
     ];
 
 
