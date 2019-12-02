@@ -9,7 +9,7 @@
   "author": "Robert Aboukhalil",
   "license": "MIT",
   "dependencies": {
-    "@robertaboukhalil/aioli": "0.1.9",
+    "@robertaboukhalil/aioli": "0.1.10",
     "jquery": "3.2.1",
     "bootstrap": "4.0.0",
     "popper.js": "1.12.3",

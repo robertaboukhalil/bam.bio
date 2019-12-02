@@ -18,4 +18,4 @@ See [biowasm](https://github.com/robertaboukhalil/biowasm) and run `make samtool
 
 ## Run `samtools` in a WebWorker
 
-Uses [aioli](https://github.com/robertaboukhalil/aioli) to run samtools inside a WebWorker (i.e. a background thread), which handles mounting .bam Files provided by the user.
+Uses [Aioli](https://github.com/robertaboukhalil/aioli) to run samtools inside a WebWorker (i.e. a background thread), which handles mounting .bam Files provided by the user.
