@@ -10,7 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "@robertaboukhalil/aioli": "0.1.10",
-    "jquery": "3.4.1",
+    "jquery": "3.5.0",
     "bootstrap": "4.4.1",
     "popper.js": "1.12.3",
     "handsontable": "7.2.2"
